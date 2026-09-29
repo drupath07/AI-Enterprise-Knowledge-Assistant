@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI Enterprise Knowledge Assistant</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .section h2 {
+            margin-top: 0;
+        }
+
+        /* =====================================================
+           UPLOAD
+        ===================================================== */
+
+        .upload-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+        }
+
+        button {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            font-size: 14px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .delete-button {
+            background: #dc2626;
+            padding: 6px 10px;
+            margin-left: 10px;
+        }
+
+        .clear-button {
+            background: #6b7280;
+        }
+
+        /* =====================================================
+           DOCUMENT LIST
+        ===================================================== */
+
+        #documentList {
+            margin-top: 15px;
+        }
+
+        .document-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* =====================================================
+           CHAT
+        ===================================================== */
+
+        #chatBox {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 85%;
+            white-space: pre-wrap;
+        }
+
+        .user-message {
+            background: #dbeafe;
+            margin-left: auto;
+        }
+
+        .assistant-message {
+            background: #e5e7eb;
+            margin-right: auto;
+        }
+
+        .message strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        #questionInput {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        /* =====================================================
+           SOURCES
+        ===================================================== */
+
+        .sources {
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .source-item {
+            display: inline-block;
+            background: #e0f2fe;
+            padding: 5px 8px;
+            margin: 3px;
+            border-radius: 5px;
+        }
+
+        /* =====================================================
+           KNOWLEDGE GRAPH
+        ===================================================== */
+
+        #graphStats {
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        #graphContainer {
+            width: 100%;
+            min-height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+            overflow: auto;
+            position: relative;
+        }
+
+        #graphCanvas {
+            width: 100%;
+            height: 500px;
+            display: block;
+        }
+
+        .graph-error {
+            color: #dc2626;
+            padding: 20px;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 700px) {
+
+            .container {
+                width: 95%;
+            }
+
+            .chat-input-area {
+                flex-direction: column;
+            }
+
+            #chatBox {
+                height: 350px;
+            }
+
+            #graphCanvas {
+                height: 450px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>AI Enterprise Knowledge Assistant</h1>
+
+
+    <!-- =====================================================
+         DOCUMENT UPLOAD
+    ====================================================== -->
+
+    <div class="section">
+
+        <h2>Upload Company Document</h2>
+
+        <div class="upload-area">
+
+            <input
+                type="file"
+                id="fileInput"
+                accept=".txt"
+            >
+
+            <button onclick="uploadDocument()">
+                Upload Document
+            </button>
+
+        </div>
+
+        <p id="uploadStatus"></p>
+
+    </div>
+
+
+    <!-- =====================================================
+         COMPANY DOCUMENTS
+    ====================================================== -->
+
+    <div class="section">
+
+        <h2>Company Documents</h2>
+
+        <div id="documentList">
+            Loading documents...
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CHAT
+    ====================================================== -->
+
+    <div class="section">
+
+        <h2>Ask the Knowledge Assistant</h2>
+
+        <div id="chatBox"></div>
+
+        <div class="chat-input-area">
+
+            <input
+                type="text"
+                id="questionInput"
+                placeholder="Ask a question about company policies..."
+            >
+
+            <button onclick="askQuestion()">
+                Ask
+            </button>
+
+            <button
+                class="clear-button"
+                onclick="clearChat()"
+            >
+                Clear
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         KNOWLEDGE GRAPH
+    ====================================================== -->
+
+    <div class="section">
+
+        <h2>Company Knowledge Graph</h2>
+
+        <p>
+            Visual representation of relationships between
+            company policies, rules, benefits, processes,
+            and requirements.
+        </p>
+
+        <div id="graphStats">
+            Loading knowledge graph...
+        </div>
+
+        <div id="graphContainer">
+
+            <canvas id="graphCanvas"></canvas>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // ========================================================
+    // API
+    // ========================================================
+
+    const API_URL = "http://127.0.0.1:8000";
+
+
+    // ========================================================
+    // CONVERSATION HISTORY
+    // ========================================================
+
+    let conversationHistory = [];
+
+
+    // ========================================================
+    // UPLOAD DOCUMENT
+    // ========================================================
+
+    async function uploadDocument() {
+
+        const fileInput =
+            document.getElementById("fileInput");
+
+        const status =
+            document.getElementById("uploadStatus");
+
+        if (!fileInput.files.length) {
+
+            status.textContent =
+                "Please select a .txt file.";
+
+            return;
+        }
+
+        const file =
+            fileInput.files[0];
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "file",
+            file
+        );
+
+        status.textContent =
+            "Uploading...";
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API_URL}/upload`,
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.detail ||
+                    "Upload failed."
+                );
+            }
+
+            status.textContent =
+                data.message;
+
+            fileInput.value = "";
+
+            loadDocuments();
+
+            loadKnowledgeGraph();
+
+        }
+
+        catch (error) {
+
+            status.textContent =
+                "Error: " + error.message;
+
+        }
+
+    }
+
+
+    // ========================================================
+    // LOAD DOCUMENTS
+    // ========================================================
+
+    async function loadDocuments() {
+
+        const documentList =
+            document.getElementById(
+                "documentList"
+            );
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API_URL}/documents`
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.detail ||
+                    "Unable to load documents."
+                );
+
+            }
+
+            documentList.innerHTML = "";
+
+            if (
+                !data.documents ||
+                data.documents.length === 0
+            ) {
+
+                documentList.innerHTML =
+                    "<p>No documents available.</p>";
+
+                return;
+
+            }
+
+
+            // IMPORTANT:
+            // Use "doc", not "document",
+            // so the browser's document object
+            // remains available.
+
+            data.documents.forEach(
+                function(doc) {
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+                    item.className =
+                        "document-item";
+
+                    const filenameSpan =
+                        document.createElement(
+                            "span"
+                        );
+
+                    filenameSpan.textContent =
+                        doc.filename;
+
+                    const deleteButton =
+                        document.createElement(
+                            "button"
+                        );
+
+                    deleteButton.className =
+                        "delete-button";
+
+                    deleteButton.textContent =
+                        "Delete";
+
+                    deleteButton.onclick =
+                        function() {
+
+                            deleteDocument(
+                                doc.filename
+                            );
+
+                        };
+
+
+                    item.appendChild(
+                        filenameSpan
+                    );
+
+                    item.appendChild(
+                        deleteButton
+                    );
+
+                    documentList.appendChild(
+                        item
+                    );
+
+                }
+            );
+
+        }
+
+        catch (error) {
+
+            documentList.innerHTML =
+                `<p>Error loading documents: ${escapeHtml(error.message)}</p>`;
+
+        }
+
+    }
+
+
+    // ========================================================
+    // DELETE DOCUMENT
+    // ========================================================
+
+    async function deleteDocument(
+        filename
+    ) {
+
+        const confirmed =
+            confirm(
+                `Delete ${filename}?`
+            );
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API_URL}/documents/${encodeURIComponent(filename)}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.detail ||
+                    "Delete failed."
+                );
+
+            }
+
+            alert(
+                data.message
+            );
+
+            loadDocuments();
+
+            loadKnowledgeGraph();
+
+        }
+
+        catch (error) {
+
+            alert(
+                "Error: " +
+                error.message
+            );
+
+        }
+
+    }
+
+
+    // ========================================================
+    // ASK QUESTION
+    // ========================================================
+
+    async function askQuestion() {
+
+        const input =
+            document.getElementById(
+                "questionInput"
+            );
+
+        const question =
+            input.value.trim();
+
+        if (!question) {
+
+            return;
+
+        }
+
+        addMessage(
+            "You",
+            question,
+            "user-message"
+        );
+
+        input.value = "";
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API_URL}/ask`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            question:
+                                question,
+
+                            conversation:
+                                conversationHistory
+
+                        })
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.detail ||
+                    "Request failed."
+                );
+
+            }
+
+            addMessage(
+                "Assistant",
+                data.answer,
+                "assistant-message",
+                data.sources
+            );
+
+
+            // Store conversation
+
+            conversationHistory.push({
+
+                role: "user",
+
+                content: question
+
+            });
+
+            conversationHistory.push({
+
+                role: "assistant",
+
+                content: data.answer
+
+            });
+
+        }
+
+        catch (error) {
+
+            addMessage(
+                "Assistant",
+                "Error: " + error.message,
+                "assistant-message"
+            );
+
+        }
+
+    }
+
+
+    // ========================================================
+    // ADD CHAT MESSAGE
+    // ========================================================
+
+    function addMessage(
+        sender,
+        message,
+        className,
+        sources = []
+    ) {
+
+        const chatBox =
+            document.getElementById(
+                "chatBox"
+            );
+
+        const messageDiv =
+            document.createElement(
+                "div"
+            );
+
+        messageDiv.className =
+            `message ${className}`;
+
+        const senderElement =
+            document.createElement(
+                "strong"
+            );
+
+        senderElement.textContent =
+            sender;
+
+        messageDiv.appendChild(
+            senderElement
+        );
+
+        const contentElement =
+            document.createElement(
+                "div"
+            );
+
+        contentElement.textContent =
+            message;
+
+        messageDiv.appendChild(
+            contentElement
+        );
+
+
+        // ====================================================
+        // SOURCES
+        // ====================================================
+
+        if (
+            sources &&
+            sources.length > 0
+        ) {
+
+            const sourcesDiv =
+                document.createElement(
+                    "div"
+                );
+
+            sourcesDiv.className =
+                "sources";
+
+            const sourceTitle =
+                document.createElement(
+                    "strong"
+                );
+
+            sourceTitle.textContent =
+                "Sources:";
+
+            sourcesDiv.appendChild(
+                sourceTitle
+            );
+
+            sources.forEach(
+                function(source) {
+
+                    const sourceItem =
+                        document.createElement(
+                            "span"
+                        );
+
+                    sourceItem.className =
+                        "source-item";
+
+                    sourceItem.textContent =
+                        source;
+
+                    sourcesDiv.appendChild(
+                        sourceItem
+                    );
+
+                }
+            );
+
+            messageDiv.appendChild(
+                sourcesDiv
+            );
+
+        }
+
+        chatBox.appendChild(
+            messageDiv
+        );
+
+        chatBox.scrollTop =
+            chatBox.scrollHeight;
+
+    }
+
+
+    // ========================================================
+    // CLEAR CHAT
+    // ========================================================
+
+    function clearChat() {
+
+        const chatBox =
+            document.getElementById(
+                "chatBox"
+            );
+
+        chatBox.innerHTML = "";
+
+        conversationHistory = [];
+
+    }
+
+
+    // ========================================================
+    // ENTER KEY
+    // ========================================================
+
+    document
+        .getElementById("questionInput")
+        .addEventListener(
+            "keydown",
+            function(event) {
+
+                if (
+                    event.key === "Enter"
+                ) {
+
+                    askQuestion();
+
+                }
+
+            }
+        );
+
+
+    // ========================================================
+    // LOAD KNOWLEDGE GRAPH
+    // ========================================================
+
+    async function loadKnowledgeGraph() {
+
+        const stats =
+            document.getElementById(
+                "graphStats"
+            );
+
+        stats.textContent =
+            "Loading knowledge graph...";
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API_URL}/knowledge-graph`
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.detail ||
+                    "Unable to load knowledge graph."
+                );
+
+            }
+
+            stats.textContent =
+                `Nodes: ${data.total_nodes} | Relationships: ${data.total_relationships}`;
+
+            drawKnowledgeGraph(
+                data.nodes,
+                data.relationships
+            );
+
+        }
+
+        catch (error) {
+
+            stats.innerHTML =
+                `<span class="graph-error">
+                    Error loading knowledge graph:
+                    ${escapeHtml(error.message)}
+                </span>`;
+
+        }
+
+    }
+
+
+    // ========================================================
+    // DRAW KNOWLEDGE GRAPH
+    // ========================================================
+
+    function drawKnowledgeGraph(
+        nodes,
+        relationships
+    ) {
+
+        const canvas =
+            document.getElementById(
+                "graphCanvas"
+            );
+
+        const container =
+            document.getElementById(
+                "graphContainer"
+            );
+
+        const width =
+            Math.max(
+                container.clientWidth,
+                900
+            );
+
+        const height =
+            500;
+
+        canvas.width =
+            width;
+
+        canvas.height =
+            height;
+
+        const ctx =
+            canvas.getContext(
+                "2d"
+            );
+
+
+        // ====================================================
+        // CREATE NODE POSITIONS
+        // ====================================================
+
+        const centerX =
+            width / 2;
+
+        const centerY =
+            height / 2;
+
+        const radius =
+            Math.min(
+                width,
+                height
+            ) * 0.34;
+
+
+        nodes.forEach(
+            function(node, index) {
+
+                const angle =
+                    (
+                        index /
+                        nodes.length
+                    ) *
+                    Math.PI *
+                    2;
+
+                node.x =
+                    centerX +
+                    radius *
+                    Math.cos(angle);
+
+                node.y =
+                    centerY +
+                    radius *
+                    Math.sin(angle);
+
+            }
+        );
+
+
+        // ====================================================
+        // DRAW RELATIONSHIPS
+        // ====================================================
+
+        relationships.forEach(
+            function(edge) {
+
+                const source =
+                    nodes.find(
+                        function(node) {
+
+                            return (
+                                node.id ===
+                                edge.source
+                            );
+
+                        }
+                    );
+
+                const target =
+                    nodes.find(
+                        function(node) {
+
+                            return (
+                                node.id ===
+                                edge.target
+                            );
+
+                        }
+                    );
+
+                if (
+                    !source ||
+                    !target
+                ) {
+
+                    return;
+
+                }
+
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    source.x,
+                    source.y
+                );
+
+                ctx.lineTo(
+                    target.x,
+                    target.y
+                );
+
+                ctx.strokeStyle =
+                    "#9ca3af";
+
+                ctx.lineWidth =
+                    1;
+
+                ctx.stroke();
+
+
+                // ====================================================
+                // RELATIONSHIP LABEL
+                // ====================================================
+
+                const middleX =
+                    (
+                        source.x +
+                        target.x
+                    ) / 2;
+
+                const middleY =
+                    (
+                        source.y +
+                        target.y
+                    ) / 2;
+
+                ctx.font =
+                    "10px Arial";
+
+                ctx.fillStyle =
+                    "#555";
+
+                ctx.fillText(
+                    edge.relation,
+                    middleX,
+                    middleY
+                );
+
+            }
+        );
+
+
+        // ====================================================
+        // DRAW NODES
+        // ====================================================
+
+        nodes.forEach(
+            function(node) {
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    node.x,
+                    node.y,
+                    25,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fillStyle =
+                    "#2563eb";
+
+                ctx.fill();
+
+                ctx.strokeStyle =
+                    "#1e40af";
+
+                ctx.lineWidth =
+                    2;
+
+                ctx.stroke();
+
+
+                // ====================================================
+                // NODE LABEL
+                // ====================================================
+
+                ctx.font =
+                    "11px Arial";
+
+                ctx.fillStyle =
+                    "#111";
+
+                ctx.textAlign =
+                    "center";
+
+                const label =
+                    node.id.length > 25
+                        ? node.id.substring(
+                            0,
+                            22
+                        ) + "..."
+                        : node.id;
+
+                ctx.fillText(
+                    label,
+                    node.x,
+                    node.y + 42
+                );
+
+            }
+        );
+
+        ctx.textAlign =
+            "start";
+
+    }
+
+
+    // ========================================================
+    // HTML ESCAPE
+    // ========================================================
+
+    function escapeHtml(text) {
+
+        const temp =
+            document.createElement(
+                "div"
+            );
+
+        temp.textContent =
+            text;
+
+        return temp.innerHTML;
+
+    }
+
+
+    // ========================================================
+    // INITIAL LOAD
+    // ========================================================
+
+    loadDocuments();
+
+    loadKnowledgeGraph();
+
+</script>
+
+</body>
+
+</html>

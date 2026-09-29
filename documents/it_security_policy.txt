@@ -1,0 +1,11 @@
+IT Security Policy
+
+Employees must use strong passwords for company accounts.
+
+Employees must not share their passwords with other people.
+
+Multi-factor authentication should be enabled for company systems.
+
+Employees must report suspected security incidents to the IT department immediately.
+
+Company data must not be stored on unauthorized personal devices.
