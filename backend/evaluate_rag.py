@@ -1,4 +1,4 @@
-from rag_chat import ask_question
+from backend.rag_chat import ask_question
 
 
 # ============================================================

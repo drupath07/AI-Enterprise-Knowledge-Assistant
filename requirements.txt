@@ -3,6 +3,5 @@ uvicorn
 python-multipart
 sentence-transformers
 chromadb
-ollama
 networkx
 python-dotenv
